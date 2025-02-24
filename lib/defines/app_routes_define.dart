@@ -1,4 +1,4 @@
-import 'package:code/app_texts.dart';
+import 'package:chat_app/app_texts.dart';
 
 enum AppRoutes { login, chat, overview, profile }
 
