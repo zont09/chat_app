@@ -1,4 +1,4 @@
-import 'package:chat_app/features/login/login_main_view.dart';
+import 'package:chat_app/features/onboarding/views/onboarding_main_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginMainView(),
+      home: OnboardingScreen(),
     );
   }
 }
