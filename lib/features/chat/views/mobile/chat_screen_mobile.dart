@@ -1,3 +1,4 @@
+import 'package:chat_app/features/chat/views/mobile/conservation_chat_view.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreenMobile extends StatelessWidget {
@@ -5,6 +6,6 @@ class ChatScreenMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return ConversationListScreen();
   }
 }

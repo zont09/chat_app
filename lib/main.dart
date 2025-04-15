@@ -1,3 +1,5 @@
+import 'package:chat_app/features/chat/views/chat_main_view.dart';
+import 'package:chat_app/features/chat/views/mobile/conservation_chat_view.dart';
 import 'package:chat_app/features/onboarding/views/onboarding_main_view.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: OnboardingScreen(),
+      home: ConversationListScreen(),
     );
   }
 }
