@@ -1,6 +1,4 @@
-import 'package:chat_app/features/chat/views/chat_main_view.dart';
 import 'package:chat_app/features/chat/views/mobile/conservation_chat_view.dart';
-import 'package:chat_app/features/onboarding/views/onboarding_main_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
