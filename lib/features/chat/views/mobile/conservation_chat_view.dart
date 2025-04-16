@@ -14,7 +14,134 @@ class ConversationListScreen extends StatefulWidget {
 
 class _ConversationListScreenState extends State<ConversationListScreen> {
   int _selectedIndex = 0;
-  final User currentUser = User(id: "1", name: "Thinh pro", avatar: "");
+  final User currentUser = User(id: "1", name: "Thinh pro", avatar: "assets/images/demo/z_avatar.png");
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  List<User> _filteredUsers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredUsers = dummyUsers
+          .where((user) => user.name.toLowerCase().contains(query))
+          .toList();
+    });
+  }
+
+  void _startSearch() {
+    setState(() {
+      _isSearching = true;
+    });
+  }
+
+  void _cancelSearch() {
+    setState(() {
+      _isSearching = false;
+      _searchController.clear();
+      _filteredUsers = [];
+    });
+  }
+
+  void _showNewChatOptions() {
+    showModalBottomSheet(
+      backgroundColor: Colors.white,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Tin nhắn mới',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E88E5),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Group chat option
+              ListTile(
+                leading: const CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Color(0xFF1E88E5),
+                  child: Icon(Icons.groups, color: Colors.white),
+                ),
+                title: const Text(
+                  'Tạo nhóm mới',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Placeholder for group chat creation
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tính năng tạo nhóm đang phát triển!')),
+                  );
+                },
+              ),
+              const Divider(height: 1),
+              // List of friends
+              Expanded(
+                child: ListView.builder(
+                  itemCount: dummyUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = dummyUsers[index];
+                    final conversation = dummyConversations.firstWhere(
+                          (c) => c.members.contains(user.id),
+                      orElse: () => dummyConversations[0],
+                    );
+                    return ListTile(
+                      leading: CircleAvatar(
+                        radius: 24,
+                        backgroundImage: AssetImage(user.avatar),
+                      ),
+                      title: Text(
+                        user.name,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatDetailScreen(
+                              user: user,
+                              messages: dummyMessages
+                                  .where((m) =>
+                                  conversation.messages.contains(m.id))
+                                  .toList(), // Empty message list for new chat
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +149,8 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Row(
+        title: !_isSearching
+            ? Row(
           children: [
             CircleAvatar(
               backgroundImage: AssetImage(currentUser.avatar),
@@ -38,78 +166,133 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
               ),
             ),
           ],
+        )
+            : TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Tìm kiếm',
+            border: InputBorder.none,
+          ),
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_square, color: Color(0xFF1E88E5)),
-            onPressed: () {},
-          ),
+          if (_isSearching)
+            TextButton(
+              onPressed: _cancelSearch,
+              child: const Text(
+                'Hủy',
+                style: TextStyle(color: Color(0xFF1E88E5), fontSize: 16),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.edit_square, color: Color(0xFF1E88E5)),
+              onPressed: _showNewChatOptions,
+            ),
         ],
       ),
       body: Column(
         children: [
+          if (!_isSearching)
           // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 12, right: 8),
-                    child: Icon(Icons.search, color: Colors.grey),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: GestureDetector(
+                onTap: _startSearch,
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  Text(
-                    'Tìm kiếm',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Story circles
-          SizedBox(
-            height: 100,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                // Your story
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: const Row(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.grey,
-                        child: Icon(Icons.add, color: Colors.white, size: 30),
+                      Padding(
+                        padding: EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.search, color: Colors.grey),
                       ),
-                      SizedBox(height: 4),
                       Text(
-                        'Tin của bạn',
-                        style: TextStyle(fontSize: 12),
+                        'Tìm kiếm',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                     ],
                   ),
                 ),
-                // Friends' stories
-                ...dummyUsers.map((user) => StoryCircle(user: user)),
-              ],
+              ),
             ),
-          ),
-
+          if (!_isSearching)
+          // Story circles
+            SizedBox(
+              height: 100,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                children: [
+                  // Your story
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.add, color: Colors.white, size: 30),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Tin của bạn',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Friends' stories
+                  ...dummyUsers.map((user) => StoryCircle(user: user)),
+                ],
+              ),
+            ),
+          if (!_isSearching)
           // Divider
-          const Divider(height: 1),
-
-          // Conversation list
+            const Divider(height: 1),
+          // Search results or conversation list
           Expanded(
-            child: ListView.builder(
+            child: _isSearching
+                ? ListView.builder(
+              itemCount: _filteredUsers.length,
+              itemBuilder: (context, index) {
+                final user = _filteredUsers[index];
+                final conversation = dummyConversations.firstWhere(
+                      (c) => c.members.contains(user.id),
+                  orElse: () => dummyConversations[0],
+                );
+                final message = dummyMessages.firstWhere(
+                      (m) => m.id == conversation.lastMessage,
+                  orElse: () => dummyMessages[0],
+                );
+
+                return ConversationListItem(
+                  user: user,
+                  message: message,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatDetailScreen(
+                          user: user,
+                          messages: dummyMessages
+                              .where((m) =>
+                              conversation.messages.contains(m.id))
+                              .toList(),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            )
+                : ListView.builder(
               itemCount: dummyConversations.length,
               itemBuilder: (context, index) {
                 final conversation = dummyConversations[index];
@@ -132,7 +315,8 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                         builder: (context) => ChatDetailScreen(
                           user: user,
                           messages: dummyMessages
-                              .where((m) => conversation.messages.contains(m.id))
+                              .where((m) =>
+                              conversation.messages.contains(m.id))
                               .toList(),
                         ),
                       ),
@@ -145,6 +329,8 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        elevation: 2,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {

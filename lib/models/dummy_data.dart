@@ -3,7 +3,7 @@ import 'package:chat_app/models/conservation_model.dart';
 import 'package:chat_app/models/message_model.dart';
 import 'package:chat_app/models/user_model.dart';
 
-final User currentUser = User(
+ User currentUser = User(
   id: 'user1',
   name: 'Tôi',
   avatar: 'assets/images/avatar_me.png',
@@ -11,17 +11,17 @@ final User currentUser = User(
 );
 
 // Dummy users
-final List<User> dummyUsers = [
+ List<User> dummyUsers = [
   User(
     id: 'user2',
     name: 'Trương',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/truong_avt.png',
     isOnline: true,
   ),
   User(
     id: 'user3',
     name: 'Thịnh',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/z_avatar.png',
     isOnline: true,
   ),
   User(
@@ -34,7 +34,7 @@ final List<User> dummyUsers = [
   User(
     id: 'user5',
     name: 'Tú',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/tu_avatar.png',
     isOnline: true,
   ),
   User(
@@ -47,41 +47,41 @@ final List<User> dummyUsers = [
   User(
     id: 'user7',
     name: 'Ngọc Thịnh',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/z_avatar.png',
     isOnline: false,
     lastSeen: DateTime.now().subtract(const Duration(hours: 5)),
   ),
   User(
     id: 'user8',
     name: 'Bone',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/truong_avt.png',
     isOnline: true,
   ),
   User(
     id: 'user9',
     name: 'Đình Như Thông',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/thong_avt.png',
     isOnline: false,
     lastSeen: DateTime.now().subtract(const Duration(days: 1)),
   ),
   User(
     id: 'user10',
     name: 'Trần Trung Thông',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/3T.png',
     isOnline: false,
     lastSeen: DateTime.now().subtract(const Duration(hours: 12)),
   ),
   User(
     id: 'user11',
     name: 'Nguyễn Tú',
-    avatar: 'assets/images/default_avatar.png',
+    avatar: 'assets/images/demo/tu_avatar.png',
     isOnline: false,
     lastSeen: DateTime.now().subtract(const Duration(minutes: 3)),
   ),
 ];
 
 // Dummy messages
-final List<Message> dummyMessages = [
+ List<Message> dummyMessages = [
   Message(
     id: 'msg1',
     sendTo: 'user1',
@@ -215,7 +215,7 @@ final List<Message> dummyMessages = [
 ];
 
 // Dummy conversations
-final List<Conversation> dummyConversations = [
+ List<Conversation> dummyConversations = [
   Conversation(
     id: 'conv1',
     members: ['user1', 'user6'],
@@ -253,3 +253,47 @@ final List<Conversation> dummyConversations = [
     messages: ['msg6', 'msg7', 'msg13'],
   ),
 ];
+
+ class DummyAction {
+   // Function to add a new user to dummyUsers
+   static void addUser(User user) {
+     // Check if user with the same ID already exists
+     if (dummyUsers.any((u) => u.id == user.id)) {
+       print('User with ID ${user.id} already exists.');
+       return;
+     }
+
+     dummyUsers.add(user);
+     print('Added user: ${user.name} (ID: ${user.id})');
+   }
+
+// Function to add a new message to dummyMessages
+   static void addMessage(Message message) {
+     // Check if message with the same ID already exists
+     if (dummyMessages.any((m) => m.id == message.id)) {
+       print('Message with ID ${message.id} already exists.');
+       return;
+     }
+
+     dummyMessages.add(message);
+     print('Added message: ${message.content} (ID: ${message.id})');
+   }
+
+// Function to add a new conversation to dummyConversations
+   static void addConversation(Conversation conversation) {
+     // Check if conversation with the same ID already exists
+     if (dummyConversations.any((c) => c.id == conversation.id)) {
+       print('Conversation with ID ${conversation.id} already exists.');
+       return;
+     }
+
+     // Validate that lastMessage exists in messages list
+     if (!conversation.messages.contains(conversation.lastMessage)) {
+       print('Last message ID ${conversation.lastMessage} must be in the messages list.');
+       return;
+     }
+
+     dummyConversations.add(conversation);
+     print('Added conversation: ${conversation.id} with members ${conversation.members}');
+   }
+ }

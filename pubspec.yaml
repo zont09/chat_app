@@ -63,6 +63,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/icons/
+    - assets/images/demo/
 
   fonts:
     - family: Afacad
