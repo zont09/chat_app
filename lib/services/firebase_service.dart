@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:chat_app/common/enum.dart';
 import 'package:chat_app/firebase_options.dart';
+import 'package:chat_app/requests/auth_request.dart';
 import 'package:chat_app/router/routes.dart';
 import 'package:chat_app/services/navigator_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +17,10 @@ class FirebaseService {
   static final FirebaseMessaging fcm = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  static final AuthRequest _authRequest = AuthRequest();
+  static const String webPushKey =
+      'BLULY-SFYt2bEaB42XJUE6M_RvF8rZQvadTYUiT2jOKuCYUoM19XzOvAyAfzEYf-4SGsOfFb32LNb2RZ51SHuRw';
 
   static Future<void> init() async {
     // Khởi tạo Firebase
@@ -64,20 +69,21 @@ class FirebaseService {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  static Future<void> syncFCMToken() async { // TODO: sync khi đăng nhập
+  static Future<String?> get fcmToken async =>
+      await fcm.getToken(vapidKey: webPushKey); // Lấy token FCM
+
+  static Future<void> syncFCMToken() async {
     // Lấy token
     String? token = await fcm.getToken();
 
     // Gửi token lên server nếu có
     if (token != null) {
       print("Gửi FCM Token: $token");
-      // _authRequest.sendFCMTokenToServer(token);
+      await _authRequest.sendFCMTokenToServer(token);
     }
   }
 
-  static Future<void> deleteFCMTokenOnServer() async { // TODO: sync khi đăng xuất
-    const String webPushKey =
-        'BLn_QRm18dAPaitPzlPdu3zXOt1f9LjPy426Yj6KZkONj0BE6eWNWgYvM_H_uUrf5Thd3718XXThQ0tJ6Gg1w88';
+  static Future<void> deleteFCMTokenOnServer() async {
     // Lấy token
     try {
       String? token = await fcm.getToken(vapidKey: webPushKey);
@@ -85,7 +91,7 @@ class FirebaseService {
       // Xóa token trên server nếu có
       if (token != null) {
         print("Xóa FCM Token: $token");
-        // _authRequest.deleteFCMTokenOnServer(token);
+        await _authRequest.deleteFCMTokenOnServer(token);
       }
     } catch (e) {
       print("Lỗi khi lấy token: $e");
