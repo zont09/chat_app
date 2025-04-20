@@ -4,9 +4,11 @@ import 'package:chat_app/features/login/bloc/login_cubit.dart';
 import 'package:chat_app/features/login/views/mobile/login_textfield_view.dart';
 import 'package:chat_app/features/login/views/mobile/sign_up_mobile_view.dart';
 import 'package:chat_app/features/login/widgets/login_button.dart';
+import 'package:chat_app/router/routes.dart';
 import 'package:chat_app/utils/resizable_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginMobileView extends StatelessWidget {
   const LoginMobileView({super.key});
@@ -49,8 +51,9 @@ class LoginMobileView extends StatelessWidget {
                                 color: ColorConfig.textColor7)),
                         InkWell(
                           onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => SignUpMobileView()));
+                            context.push(Routes.register);
+                            // Navigator.of(context).push(MaterialPageRoute(
+                            //     builder: (context) => SignUpMobileView()));
                           },
                           child: Text(AppText.textCreateAccountNow.text,
                               style: TextStyle(

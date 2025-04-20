@@ -1,18 +1,45 @@
+import 'package:chat_app/features/chat/views/mobile/chat_detail_view.dart';
+import 'package:chat_app/features/chat/views/mobile/conservation_chat_view.dart';
 import 'package:chat_app/features/login/login_main_view.dart';
+import 'package:chat_app/features/login/views/mobile/sign_up_mobile_view.dart';
+import 'package:chat_app/models/conservation_model.dart';
 import 'package:chat_app/services/navigator_service.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:chat_app/models/user_model.dart';
+import '../models/message_model.dart';
 import 'routes.dart';
 
 final GoRouter router = GoRouter(
   debugLogDiagnostics: true,
-  initialLocation: Routes.login,
+  initialLocation: Routes.conversation,
   navigatorKey: navigatorKey,
   routes: [
     GoRoute(
       path: Routes.login,
       builder: (context, state) => const LoginMainView(),
     ),
+    GoRoute(path: Routes.register, builder: (context, state) {
+      return const SignUpMobileView();
+      
+    }),
+    GoRoute(path: Routes.conversation, builder: (context, state) {
+      return const ConversationListScreen();
+    }),
+    GoRoute(
+        path: Routes.chatDetail,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final user = extra['user'] as User;
+          final messages = extra['messages'] as List<Message>;
+          final onAdd = extra['onAdd'] as Function(Conversation);
+          final onUpdate = extra['onUpdate'] as Function(Conversation);
+          return ChatDetailScreen(
+            user: user,
+            messages: messages,
+            onAdd: onAdd,
+            onUpdate: onUpdate,
+          );
+        }),
 
     // Cách dùng goroute:
     // context.go(Routes.login);
