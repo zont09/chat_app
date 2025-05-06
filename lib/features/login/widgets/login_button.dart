@@ -29,7 +29,7 @@ class LoginButton extends StatelessWidget {
 
                 if (response != null) {
                   // Navigate to home screen on successful login
-                  context.go(Routes.home);
+                  context.go(Routes.conversation);
                 } else {
                   // Show error dialog if login fails
                   DialogUtils.showResultDialog(

@@ -5,6 +5,7 @@ import 'package:chat_app/features/login/views/mobile/sign_up_mobile_view.dart';
 import 'package:chat_app/features/splash/splash_page.dart';
 import 'package:chat_app/models/conversation.dart';
 import 'package:chat_app/models/message.dart';
+import 'package:chat_app/router/shell_route/shell_route.dart';
 import 'package:chat_app/services/navigator_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:chat_app/models/user.dart';
@@ -15,6 +16,7 @@ final GoRouter router = GoRouter(
   initialLocation: Routes.splash,
   navigatorKey: navigatorKey,
   routes: [
+    shellRoute,
     GoRoute(
       path: Routes.splash,
       builder: (context, state) => const SplashPage(),

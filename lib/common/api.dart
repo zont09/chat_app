@@ -4,15 +4,16 @@ abstract class Api {
 
   // For desktop/web: use localhost
   // static const String baseUrl = 'http://localhost:5000/api/';
-  static String wsUrl = 'ws://localhost:5000/';
+  // static String wsUrl = 'ws://localhost:5000/';
 
   // For mobile devices: replace with your computer's IP address
   // Make sure your phone and computer are connected to the same WiFi network
   // To find your IP address on Windows, run 'ipconfig' in Command Prompt 
   // and look for the IPv4 address under your active network adapter
   // Example: 192.168.1.5
+  // Open port 5000 on your firewall if needed
   static const String baseUrl = 'http://192.168.1.103:5000/api/';
-  // static String wsUrl = 'ws://192.168.1.5:5000/';
+  static String wsUrl = 'ws://192.168.1.103:5000/';
 
   // Auth
   static const String login = 'auth/login';

@@ -17,18 +17,22 @@ class WebSocketService {
   /// Kết nối WebSocket (gọi một lần, ví dụ ở main() hoặc khi app khởi động)
   void connect(String url, {String? token, String? deviceId}) {
     if (_connected) return; // tránh connect nhiều lần
-    
+
     // Cấu hình Socket.IO
-    _socket = io(url, OptionBuilder()
-      .setTransports(['websocket']) // Chỉ sử dụng WebSocket, không fallback về polling
-      .setExtraHeaders({
-        'token': token,
-        'deviceId': deviceId ?? 'flutter-device',
-      })
-      .enableAutoConnect() // Tự động kết nối
-      .enableReconnection() // Tự động kết nối lại khi mất kết nối
-      .build());
-    
+    _socket = io(
+        url,
+        OptionBuilder()
+            .setTransports([
+              'websocket'
+            ]) // Chỉ sử dụng WebSocket, không fallback về polling
+            // Pass token in both query and auth to make sure server gets it
+            .setQuery({'token': token})
+            .setAuth({'token': token})
+            .setExtraHeaders({'token': token})
+            .enableAutoConnect() // Tự động kết nối
+            .enableReconnection() // Tự động kết nối lại khi mất kết nối
+            .build());
+
     _connected = true;
 
     // Xử lý các sự kiện cơ bản
@@ -57,7 +61,7 @@ class WebSocketService {
       try {
         // Cho trường hợp data có thể là String
         final mapData = data is String ? jsonDecode(data) : data;
-        
+
         if (mapData is Map<String, dynamic>) {
           _notifyCallbacks('new_message', mapData);
           _streamController.add({'type': 'new_message', 'data': mapData});
@@ -66,7 +70,7 @@ class WebSocketService {
         _notifyCallbacks('error', {'message': 'Lỗi xử lý new_message: $e'});
       }
     });
-    
+
     // Xử lý các event từ server (thêm các event khác từ backend nếu cần)
     final serverEvents = [
       'groupCreated',
@@ -89,13 +93,13 @@ class WebSocketService {
       'joined_conversation',
       'error'
     ];
-    
+
     for (final event in serverEvents) {
       _socket.on(event, (data) {
         try {
           // Xử lý dữ liệu có thể là String (từ server gửi xuống)
           final mapData = data is String ? jsonDecode(data) : data;
-          
+
           if (mapData is Map<String, dynamic>) {
             _notifyCallbacks(event, mapData);
             _streamController.add({'type': event, 'data': mapData});
@@ -142,7 +146,7 @@ class WebSocketService {
     if (!_connected) return;
     _socket.emit(type, {'type': type, 'data': data});
   }
-  
+
   /// Hàm tham gia vào room (cuộc hội thoại)
   void joinConversation(String conversationId) {
     if (!_connected) return;
@@ -150,25 +154,25 @@ class WebSocketService {
       'data': {'conversationId': conversationId}
     });
   }
-  
+
   /// Hàm rời khỏi room (cuộc hội thoại)
   void leaveConversation(String conversationId) {
     if (!_connected) return;
     _socket.emit('leave_conversation', conversationId);
   }
-  
+
   /// Gửi trạng thái đang nhập
   void sendTypingStart(String conversationId) {
     if (!_connected) return;
     _socket.emit('typing_start', conversationId);
   }
-  
+
   /// Gửi trạng thái dừng nhập
   void sendTypingEnd(String conversationId) {
     if (!_connected) return;
     _socket.emit('typing_end', conversationId);
   }
-  
+
   /// Gửi tin nhắn
   void sendMessage(String conversationId, Map<String, dynamic> messageData) {
     if (!_connected) return;

@@ -29,7 +29,7 @@ class SignUpButton extends StatelessWidget {
 
                 if (response != null) {
                   // Navigate to home screen on successful registration
-                  context.go(Routes.home);
+                  context.go(Routes.conversation);
                 } else {
                   // Show error dialog if registration fails
                   DialogUtils.showResultDialog(

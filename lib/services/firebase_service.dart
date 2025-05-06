@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:chat_app/common/enum.dart';
 import 'package:chat_app/firebase_options.dart';
@@ -7,9 +6,7 @@ import 'package:chat_app/requests/auth_request.dart';
 import 'package:chat_app/router/routes.dart';
 import 'package:chat_app/services/navigator_service.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 
@@ -156,9 +153,9 @@ class FirebaseService {
       case NotificationType.newFriendRequest:
         // Chuyển hướng đến trang bạn bè
         if (fromBackground) {
-          context.go(Routes.friend);
+          context.go(Routes.friends);
         } else {
-          context.push(Routes.friend, extra: message.data);
+          context.push(Routes.friends, extra: message.data);
         }
         break;
       default:

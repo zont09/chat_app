@@ -1,6 +1,5 @@
 import 'package:chat_app/configs/color_configs.dart';
 import 'package:chat_app/features/chat/bloc/conversation_cubit.dart';
-import 'package:chat_app/features/chat/views/mobile/chat_detail_view.dart';
 import 'package:chat_app/features/chat/widgets/conservation_list_item.dart';
 import 'package:chat_app/features/chat/widgets/story_circle.dart';
 import 'package:chat_app/models/dummy_data.dart';
@@ -18,7 +17,6 @@ class ConversationListScreen extends StatefulWidget {
 }
 
 class _ConversationListScreenState extends State<ConversationListScreen> {
-  int _selectedIndex = 0;
   final User currentUser = DummyData.instance.currentUser;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
@@ -131,8 +129,8 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                         orElse: () => DummyData
                                             .instance.dummyConversations[0],
                                       )
-                                      .messages
-                                      !.contains(m.id))
+                                      .messages!
+                                      .contains(m.id))
                               .toList(),
                           'onAdd': (v) {},
                           'onUpdate': (v) {},
@@ -325,7 +323,8 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                         orElse: () => DummyData
                                             .instance.dummyConversations[0],
                                       )
-                                      .lastMessage!.id,
+                                      .lastMessage!
+                                      .id,
                               orElse: () => DummyData.instance.dummyMessages[0],
                             );
 
@@ -336,16 +335,15 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                 context.push(Routes.chatDetail, extra: {
                                   'user': user,
                                   'messages': DummyData.instance.dummyMessages
-                                      .where((m) =>
-                                          DummyData.instance.dummyConversations
-                                              .firstWhere(
-                                                (c) =>
-                                                    c.members!.contains(user.id),
-                                                orElse: () => DummyData.instance
-                                                    .dummyConversations[0],
-                                              )
-                                              .messages
-                                              !.contains(m.id))
+                                      .where((m) => DummyData
+                                          .instance.dummyConversations
+                                          .firstWhere(
+                                            (c) => c.members!.contains(user.id),
+                                            orElse: () => DummyData
+                                                .instance.dummyConversations[0],
+                                          )
+                                          .messages!
+                                          .contains(m.id))
                                       .toList(),
                                   'onAdd': (v) {
                                     cubit.addConversation(v);
@@ -437,59 +435,6 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                             );
                           },
                         ),
-                ),
-              ],
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: Colors.white,
-              elevation: 2,
-              currentIndex: _selectedIndex,
-              onTap: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              selectedItemColor: ColorConfig.primary3,
-              unselectedItemColor: Colors.grey,
-              items: [
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.chat_bubble),
-                  label: 'Đoạn chat',
-                ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    children: [
-                      const Icon(Icons.people),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 12,
-                            minHeight: 12,
-                          ),
-                          child: const Text(
-                            '2',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  label: 'Bạn bè',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.groups),
-                  label: 'Nhóm',
                 ),
               ],
             ),
