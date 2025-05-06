@@ -1,5 +1,5 @@
-import 'package:chat_app/models/message_model.dart';
-import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/models/message.dart';
+import 'package:chat_app/models/user.dart';
 import 'package:flutter/material.dart';
 
 class ConversationListItem extends StatelessWidget {
@@ -25,10 +25,10 @@ class ConversationListItem extends StatelessWidget {
             Stack(
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage(user.avatar),
+                  backgroundImage: AssetImage(user.avatarUrl!),
                   radius: 24,
                 ),
-                if (user.isOnline)
+                if (user.isOnline!)
                   Positioned(
                     right: 0,
                     bottom: 0,
@@ -53,14 +53,14 @@ class ConversationListItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        user.name,
+                        user.name!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       Text(
-                        _formatMessageTime(message.timestamp),
+                        _formatMessageTime(message.timestamp!),
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 12,
@@ -116,13 +116,13 @@ class ConversationListItem extends StatelessWidget {
   }
 
   String _getMessagePreview() {
-    if (message.isDeletedForEveryone) {
+    if (message.isDeletedForEveryone ?? false) {
       return 'Tin nhắn đã bị xóa';
     }
 
     switch (message.type) {
       case MessageType.text:
-        return message.content;
+        return message.content!;
       case MessageType.image:
         return '📷 Hình ảnh';
       case MessageType.video:

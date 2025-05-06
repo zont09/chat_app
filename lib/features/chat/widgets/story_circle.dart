@@ -1,4 +1,4 @@
-import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/models/user.dart';
 import 'package:flutter/material.dart';
 
 class StoryCircle extends StatelessWidget {
@@ -22,18 +22,18 @@ class StoryCircle extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: user.isOnline ? Colors.green : Colors.transparent,
+                    color: user.isOnline! ? Colors.green : Colors.transparent,
                     width: 2,
                   ),
                 ),
                 child: CircleAvatar(
-                  backgroundImage: AssetImage(user.avatar.isNotEmpty
-                      ? user.avatar
+                  backgroundImage: AssetImage(user.avatarUrl!.isNotEmpty
+                      ? user.avatarUrl!
                       : 'assets/images/default_avatar.png'),
                   radius: 28,
                 ),
               ),
-              if (user.isOnline)
+              if (user.isOnline!)
                 Positioned(
                   right: 0,
                   bottom: 0,
@@ -51,7 +51,7 @@ class StoryCircle extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            user.name.split(' ').last,
+            user.name!.split(' ').last,
             style: const TextStyle(fontSize: 12),
           ),
         ],

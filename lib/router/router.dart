@@ -2,29 +2,37 @@ import 'package:chat_app/features/chat/views/mobile/chat_detail_view.dart';
 import 'package:chat_app/features/chat/views/mobile/conservation_chat_view.dart';
 import 'package:chat_app/features/login/login_main_view.dart';
 import 'package:chat_app/features/login/views/mobile/sign_up_mobile_view.dart';
-import 'package:chat_app/models/conservation_model.dart';
+import 'package:chat_app/features/splash/splash_page.dart';
+import 'package:chat_app/models/conversation.dart';
+import 'package:chat_app/models/message.dart';
 import 'package:chat_app/services/navigator_service.dart';
 import 'package:go_router/go_router.dart';
-import 'package:chat_app/models/user_model.dart';
-import '../models/message_model.dart';
+import 'package:chat_app/models/user.dart';
 import 'routes.dart';
 
 final GoRouter router = GoRouter(
   debugLogDiagnostics: true,
-  initialLocation: Routes.conversation,
+  initialLocation: Routes.splash,
   navigatorKey: navigatorKey,
   routes: [
+    GoRoute(
+      path: Routes.splash,
+      builder: (context, state) => const SplashPage(),
+    ),
     GoRoute(
       path: Routes.login,
       builder: (context, state) => const LoginMainView(),
     ),
-    GoRoute(path: Routes.register, builder: (context, state) {
-      return const SignUpMobileView();
-      
-    }),
-    GoRoute(path: Routes.conversation, builder: (context, state) {
-      return const ConversationListScreen();
-    }),
+    GoRoute(
+        path: Routes.register,
+        builder: (context, state) {
+          return const SignUpMobileView();
+        }),
+    GoRoute(
+        path: Routes.conversation,
+        builder: (context, state) {
+          return const ConversationListScreen();
+        }),
     GoRoute(
         path: Routes.chatDetail,
         builder: (context, state) {

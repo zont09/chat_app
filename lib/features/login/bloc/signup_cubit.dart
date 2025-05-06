@@ -4,17 +4,21 @@ import 'package:chat_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LoginCubit extends Cubit<int> {
-  LoginCubit() : super(0);
+class SignUpCubit extends Cubit<int> {
+  SignUpCubit() : super(0);
 
   final AuthRequest _authRequest = AuthRequest();
   final AuthService _authService = AuthService();
 
+  final TextEditingController conEmail = TextEditingController();
   final TextEditingController conUsername = TextEditingController();
   final TextEditingController conPassword = TextEditingController();
+  final TextEditingController conConfirmPassword = TextEditingController();
 
+  int errorEmail = -1;
   int errorUsername = -1;
   int errorPassword = -1;
+  int errorConfirmPassword = -1;
   bool isLoading = false;
 
   bool isValidEmail(String email) {
@@ -23,14 +27,22 @@ class LoginCubit extends Cubit<int> {
     return regex.hasMatch(email);
   }
 
-  Future<AuthResponse?> login() async {
+  Future<AuthResponse?> register() async {
     // Validate inputs first
-    if (conUsername.text.isEmpty) {
-      errorUsername = 1;
+    if (conEmail.text.isEmpty) {
+      errorEmail = 1;
       emit(state + 1);
       return null;
-    } else if (!isValidEmail(conUsername.text)) {
-      errorUsername = 2;
+    } else if (!isValidEmail(conEmail.text)) {
+      errorEmail = 2;
+      emit(state + 1);
+      return null;
+    } else {
+      errorEmail = -1;
+    }
+
+    if (conUsername.text.isEmpty) {
+      errorUsername = 1;
       emit(state + 1);
       return null;
     } else {
@@ -45,12 +57,25 @@ class LoginCubit extends Cubit<int> {
       errorPassword = -1;
     }
 
+    if (conConfirmPassword.text.isEmpty) {
+      errorConfirmPassword = 1;
+      emit(state + 1);
+      return null;
+    } else if (conConfirmPassword.text != conPassword.text) {
+      errorConfirmPassword = 2;
+      emit(state + 1);
+      return null;
+    } else {
+      errorConfirmPassword = -1;
+    }
+
     try {
       isLoading = true;
       emit(state + 1);
 
-      final response = await _authRequest.login(
-        email: conUsername.text.trim(),
+      final response = await _authRequest.register(
+        email: conEmail.text.trim(),
+        username: conUsername.text.trim(),
         password: conPassword.text,
       );
 
@@ -67,7 +92,7 @@ class LoginCubit extends Cubit<int> {
       emit(state + 1);
       return null;
     } catch (e) {
-      print('Login error: $e');
+      print('Registration error: $e');
       isLoading = false;
       emit(state + 1);
       return null;

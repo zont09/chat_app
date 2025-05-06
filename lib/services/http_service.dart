@@ -393,7 +393,7 @@ class HttpService {
   Future<Map<String, String>> getHeaders({
     contentType = 'application/json',
   }) async {
-    final userToken = await AuthService.getAuthBearerToken();
+    final userToken = await AuthService().getToken();
     print('User token: $userToken');
     return {
       'Authorization': 'Bearer $userToken',

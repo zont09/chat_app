@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 class WebSocketService {
-  late final WebSocketChannel _channel;
+  late final Socket _socket;
   bool _connected = false;
 
   // StreamController cho những ai muốn lắng nghe toàn bộ sự kiện
@@ -16,42 +15,96 @@ class WebSocketService {
       {};
 
   /// Kết nối WebSocket (gọi một lần, ví dụ ở main() hoặc khi app khởi động)
-  void connect(String url) {
+  void connect(String url, {String? token, String? deviceId}) {
     if (_connected) return; // tránh connect nhiều lần
-    _channel = IOWebSocketChannel.connect(Uri.parse(url));
+    
+    // Cấu hình Socket.IO
+    _socket = io(url, OptionBuilder()
+      .setTransports(['websocket']) // Chỉ sử dụng WebSocket, không fallback về polling
+      .setExtraHeaders({
+        'token': token,
+        'deviceId': deviceId ?? 'flutter-device',
+      })
+      .enableAutoConnect() // Tự động kết nối
+      .enableReconnection() // Tự động kết nối lại khi mất kết nối
+      .build());
+    
     _connected = true;
 
-    _channel.stream.listen((message) {
-      try {
-        final jsonData = jsonDecode(message);
-        if (jsonData is! Map<String, dynamic>) {
-          // Dữ liệu sai định dạng => bắn event error
-          _notifyCallbacks('error', {'message': 'Sai format (không phải Map)'});
-          return;
-        }
-
-        final type = jsonData['type'];
-        final data = jsonData['data'];
-
-        // 1. Gọi những callback đăng ký cho type này
-        if (type is String) {
-          _notifyCallbacks(type, data);
-        } else {
-          // type không phải String => bắn event error
-          _notifyCallbacks('error', {'message': 'type không phải String'});
-        }
-
-        // 2. Optionally, đẩy vào stream tổng (cho StreamBuilder)
-        _streamController.add(jsonData);
-      } catch (e) {
-        _notifyCallbacks('error', {'message': 'Lỗi parse JSON: $e'});
-      }
-    }, onError: (error) {
-      _notifyCallbacks('error', {'message': error.toString()});
-    }, onDone: () {
-      _notifyCallbacks('error', {'message': 'Kết nối WebSocket bị đóng'});
-      _connected = false;
+    // Xử lý các sự kiện cơ bản
+    _socket.onConnect((_) {
+      print('Kết nối Socket.IO thành công');
     });
+
+    _socket.onDisconnect((_) {
+      print('Socket.IO bị ngắt kết nối');
+      _connected = false;
+      _notifyCallbacks('error', {'message': 'Kết nối WebSocket bị đóng'});
+    });
+
+    _socket.onConnectError((err) {
+      print('Lỗi kết nối Socket.IO: $err');
+      _notifyCallbacks('error', {'message': 'Lỗi kết nối: $err'});
+    });
+
+    _socket.onError((err) {
+      print('Socket.IO error: $err');
+      _notifyCallbacks('error', {'message': err.toString()});
+    });
+
+    // Xử lý các sự kiện từ server
+    _socket.on('new_message', (data) {
+      try {
+        // Cho trường hợp data có thể là String
+        final mapData = data is String ? jsonDecode(data) : data;
+        
+        if (mapData is Map<String, dynamic>) {
+          _notifyCallbacks('new_message', mapData);
+          _streamController.add({'type': 'new_message', 'data': mapData});
+        }
+      } catch (e) {
+        _notifyCallbacks('error', {'message': 'Lỗi xử lý new_message: $e'});
+      }
+    });
+    
+    // Xử lý các event từ server (thêm các event khác từ backend nếu cần)
+    final serverEvents = [
+      'groupCreated',
+      'memberAdded',
+      'memberRemoved',
+      'memberLeft',
+      'message_read',
+      'message_deleted',
+      'message_edited',
+      'groupNameUpdated',
+      'groupAvatarUpdated',
+      'conversationDeleted',
+      'nicknameUpdated',
+      'roleUpdated',
+      'friend_request',
+      'friend_request_accepted',
+      'typing_start',
+      'typing_end',
+      'direct_message',
+      'joined_conversation',
+      'error'
+    ];
+    
+    for (final event in serverEvents) {
+      _socket.on(event, (data) {
+        try {
+          // Xử lý dữ liệu có thể là String (từ server gửi xuống)
+          final mapData = data is String ? jsonDecode(data) : data;
+          
+          if (mapData is Map<String, dynamic>) {
+            _notifyCallbacks(event, mapData);
+            _streamController.add({'type': event, 'data': mapData});
+          }
+        } catch (e) {
+          _notifyCallbacks('error', {'message': 'Lỗi xử lý $event: $e'});
+        }
+      });
+    }
   }
 
   /// Hàm đăng ký callback cho một loại sự kiện
@@ -84,17 +137,53 @@ class WebSocketService {
     }
   }
 
-  /// Hàm gửi dữ liệu lên server
+  /// Hàm gửi dữ liệu lên server (socket.emit)
   void send(String type, Map<String, dynamic> data) {
     if (!_connected) return;
-    final msg = {'type': type, 'data': data};
-    _channel.sink.add(jsonEncode(msg));
+    _socket.emit(type, {'type': type, 'data': data});
+  }
+  
+  /// Hàm tham gia vào room (cuộc hội thoại)
+  void joinConversation(String conversationId) {
+    if (!_connected) return;
+    _socket.emit('join_conversation', {
+      'data': {'conversationId': conversationId}
+    });
+  }
+  
+  /// Hàm rời khỏi room (cuộc hội thoại)
+  void leaveConversation(String conversationId) {
+    if (!_connected) return;
+    _socket.emit('leave_conversation', conversationId);
+  }
+  
+  /// Gửi trạng thái đang nhập
+  void sendTypingStart(String conversationId) {
+    if (!_connected) return;
+    _socket.emit('typing_start', conversationId);
+  }
+  
+  /// Gửi trạng thái dừng nhập
+  void sendTypingEnd(String conversationId) {
+    if (!_connected) return;
+    _socket.emit('typing_end', conversationId);
+  }
+  
+  /// Gửi tin nhắn
+  void sendMessage(String conversationId, Map<String, dynamic> messageData) {
+    if (!_connected) return;
+    // Cấu trúc data cần phải khớp với mong đợi của server
+    final data = {
+      'conversationId': conversationId,
+      ...messageData,
+    };
+    _socket.emit('send_message', {'data': data});
   }
 
   /// Đóng kết nối
   void dispose() {
     if (_connected) {
-      _channel.sink.close();
+      _socket.disconnect();
       _streamController.close();
       _connected = false;
     }

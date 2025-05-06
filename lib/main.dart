@@ -1,7 +1,5 @@
-import 'package:chat_app/common/api.dart';
 import 'package:chat_app/router/router.dart';
 import 'package:chat_app/services/firebase_service.dart';
-import 'package:chat_app/services/websocket_service.dart';
 import 'package:chat_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -17,13 +15,9 @@ Future<void> main() async {
   final docDir = await getApplicationDocumentsDirectory();
   Hive.init(docDir.path);
 
-  // Khởi tạo WebSocket
-  final ws = WebSocketService();
-  ws.connect(Api.wsUrl);
-
   // Khởi tạo Firebase
   await FirebaseService.init();
-  
+
   runApp(const RealChatApp());
 }
 

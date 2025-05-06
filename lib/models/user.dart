@@ -10,13 +10,13 @@ class User {
   final String? role; // "admin", "member"
 
   User({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.avatarUrl,
-    required this.password,
-    required this.lastSeen,
-    required this.isOnline,
+    this.id,
+    this.name,
+    this.email,
+    this.avatarUrl,
+    this.password,
+    this.lastSeen,
+    this.isOnline,
     this.nickname, // optional
     this.role, // "admin", "member"
   });

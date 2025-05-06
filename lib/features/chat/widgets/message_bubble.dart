@@ -1,5 +1,5 @@
-import 'package:chat_app/models/message_model.dart';
-import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/models/message.dart';
+import 'package:chat_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -17,7 +17,7 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (message.isDeletedForEveryone) {
+    if (message.isDeletedForEveryone!) {
       return _buildDeletedMessage(context);
     }
 
@@ -68,14 +68,14 @@ class MessageBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              message.content,
+              message.content!,
               style: TextStyle(
                 color: isMe ? Colors.white : Colors.black,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              DateFormat('HH:mm').format(message.timestamp),
+              DateFormat('HH:mm').format(message.timestamp!),
               style: TextStyle(
                 color: isMe ? Colors.white70 : Colors.grey,
                 fontSize: 10,
@@ -105,7 +105,7 @@ class MessageBubble extends StatelessWidget {
                 top: Radius.circular(16),
               ),
               child: Image.asset(
-                message.content,
+                message.content!,
                 width: 200,
                 height: 150,
                 fit: BoxFit.cover,
@@ -114,7 +114,7 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                DateFormat('HH:mm').format(message.timestamp),
+                DateFormat('HH:mm').format(message.timestamp!),
                 style: TextStyle(
                   color: isMe ? Colors.white70 : Colors.grey,
                   fontSize: 10,
@@ -148,7 +148,7 @@ class MessageBubble extends StatelessWidget {
                     top: Radius.circular(16),
                   ),
                   child: Image.asset(
-                    message.content,
+                    message.content!,
                     width: 200,
                     height: 150,
                     fit: BoxFit.cover,
@@ -171,7 +171,7 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                DateFormat('HH:mm').format(message.timestamp),
+                DateFormat('HH:mm').format(message.timestamp!),
                 style: TextStyle(
                   color: isMe ? Colors.white70 : Colors.grey,
                   fontSize: 10,

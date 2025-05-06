@@ -4,10 +4,10 @@ import 'package:chat_app/models/user.dart';
 
 enum ConversationType { private, group }
 
-class Conversations {
+class Conversation {
   final String? id;
   final List<User>? members; // List of User objects
-  final String? lastMessage;
+  final Message? lastMessage;
   final List<Message>? messages;
   final ConversationType? type; // "private", "group"
   final String? name;
@@ -16,7 +16,7 @@ class Conversations {
   final Theme? theme; // optional
   final User? creator;
 
-  Conversations({
+  Conversation({
     this.id,
     this.members,
     this.lastMessage,
@@ -29,8 +29,8 @@ class Conversations {
     this.creator,
   });
 
-  factory Conversations.fromJson(Map<String, dynamic> json) {
-    return Conversations(
+  factory Conversation.fromJson(Map<String, dynamic> json) {
+    return Conversation(
       id: json['_id'],
       members: (json['members'] as List<dynamic>?)
           ?.map((e) => User.fromJson(e))

@@ -1,5 +1,5 @@
 import 'package:chat_app/app_texts.dart';
-import 'package:chat_app/features/login/bloc/sign_up_cubit.dart';
+import 'package:chat_app/features/login/bloc/signup_cubit.dart';
 import 'package:chat_app/features/login/views/mobile/sign_up_textfield_view.dart';
 import 'package:chat_app/features/login/widgets/gradient_text.dart';
 import 'package:chat_app/features/login/widgets/sign_up_button.dart';

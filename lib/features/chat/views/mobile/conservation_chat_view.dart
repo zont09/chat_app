@@ -4,7 +4,7 @@ import 'package:chat_app/features/chat/views/mobile/chat_detail_view.dart';
 import 'package:chat_app/features/chat/widgets/conservation_list_item.dart';
 import 'package:chat_app/features/chat/widgets/story_circle.dart';
 import 'package:chat_app/models/dummy_data.dart';
-import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/models/user.dart';
 import 'package:chat_app/router/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -40,7 +40,7 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredUsers = DummyData.instance.dummyUsers
-          .where((user) => user.name.toLowerCase().contains(query))
+          .where((user) => user.name!.toLowerCase().contains(query))
           .toList();
     });
   }
@@ -112,10 +112,10 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                     return ListTile(
                       leading: CircleAvatar(
                         radius: 24,
-                        backgroundImage: AssetImage(user.avatar),
+                        backgroundImage: AssetImage(user.avatarUrl!),
                       ),
                       title: Text(
-                        user.name,
+                        user.name!,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
@@ -124,14 +124,15 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                         context.push(Routes.chatDetail, extra: {
                           'user': user,
                           'messages': DummyData.instance.dummyMessages
-                              .where((m) => DummyData.instance.dummyConversations
-                                  .firstWhere(
-                                    (c) => c.members.contains(user.id),
-                                    orElse: () =>
-                                        DummyData.instance.dummyConversations[0],
-                                  )
-                                  .messages
-                                  .contains(m.id))
+                              .where(
+                                  (m) => DummyData.instance.dummyConversations
+                                      .firstWhere(
+                                        (c) => c.members!.contains(user.id),
+                                        orElse: () => DummyData
+                                            .instance.dummyConversations[0],
+                                      )
+                                      .messages
+                                      !.contains(m.id))
                               .toList(),
                           'onAdd': (v) {},
                           'onUpdate': (v) {},
@@ -184,18 +185,19 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
               elevation: 0,
               title: !_isSearching
                   ? Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         CircleAvatar(
-                          backgroundImage: AssetImage(currentUser.avatar),
+                          backgroundImage: AssetImage(currentUser.avatarUrl!),
                           radius: 18,
                         ),
                         const SizedBox(width: 12),
                         const Text(
                           'Đoạn Chat',
                           style: TextStyle(
-                            color: ColorConfig.primary3, fontSize: 25, fontWeight: FontWeight.bold
-                          ),
+                              color: ColorConfig.primary3,
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(width: 12),
                         const SizedBox.shrink(),
@@ -224,14 +226,17 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                     padding: EdgeInsets.only(right: 20.0),
                     child: InkWell(
                       onTap: _showNewChatOptions,
-                      child: Image.asset('assets/images/icons/ic_new_conversation.png', height: 40,),
+                      child: Image.asset(
+                        'assets/images/icons/ic_new_conversation.png',
+                        height: 40,
+                      ),
                     ),
                   )
-                  // IconButton(
-                  //   icon:
-                  //       const Icon(Icons.edit_square, color: Color(0xFF1E88E5)),
-                  //   onPressed: _showNewChatOptions,
-                  // ),
+                // IconButton(
+                //   icon:
+                //       const Icon(Icons.edit_square, color: Color(0xFF1E88E5)),
+                //   onPressed: _showNewChatOptions,
+                // ),
               ],
             ),
             body: Column(
@@ -316,11 +321,11 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                   m.id ==
                                   cubit.conversations
                                       .firstWhere(
-                                        (c) => c.members.contains(user.id),
+                                        (c) => c.members!.contains(user.id),
                                         orElse: () => DummyData
                                             .instance.dummyConversations[0],
                                       )
-                                      .lastMessage,
+                                      .lastMessage!.id,
                               orElse: () => DummyData.instance.dummyMessages[0],
                             );
 
@@ -331,16 +336,16 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                 context.push(Routes.chatDetail, extra: {
                                   'user': user,
                                   'messages': DummyData.instance.dummyMessages
-                                      .where((m) => DummyData.instance
-                                          .dummyConversations
-                                          .firstWhere(
-                                            (c) => c.members.contains(user.id),
-                                            orElse: () =>
-                                                DummyData.instance
+                                      .where((m) =>
+                                          DummyData.instance.dummyConversations
+                                              .firstWhere(
+                                                (c) =>
+                                                    c.members!.contains(user.id),
+                                                orElse: () => DummyData.instance
                                                     .dummyConversations[0],
-                                          )
-                                          .messages
-                                          .contains(m.id))
+                                              )
+                                              .messages
+                                              !.contains(m.id))
                                       .toList(),
                                   'onAdd': (v) {
                                     cubit.addConversation(v);
@@ -379,19 +384,17 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                           },
                         )
                       : ListView.builder(
-                          itemCount:
-                          cubit.conversations.length,
+                          itemCount: cubit.conversations.length,
                           itemBuilder: (context, index) {
-                            final conversation =
-                            cubit.conversations[index];
+                            final conversation = cubit.conversations[index];
                             final user =
                                 DummyData.instance.dummyUsers.firstWhere(
-                              (u) => u.id == conversation.members[1],
+                              (u) => u.id == conversation.members?[1],
                               orElse: () => DummyData.instance.dummyUsers[0],
                             );
                             final message =
                                 DummyData.instance.dummyMessages.firstWhere(
-                              (m) => m.id == conversation.lastMessage,
+                              (m) => m.id == conversation.lastMessage!.id,
                               orElse: () => DummyData.instance.dummyMessages[0],
                             );
 
@@ -402,8 +405,8 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
                                 context.push(Routes.chatDetail, extra: {
                                   'user': user,
                                   'messages': DummyData.instance.dummyMessages
-                                      .where((m) => conversation.messages
-                                          .contains(m.id))
+                                      .where((m) =>
+                                          conversation.messages!.contains(m.id))
                                       .toList(),
                                   'onAdd': (v) {
                                     cubit.addConversation(v);

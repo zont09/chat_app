@@ -1,7 +1,7 @@
 import 'package:chat_app/features/chat/widgets/message_bubble.dart';
-import 'package:chat_app/models/conservation_model.dart';
-import 'package:chat_app/models/message_model.dart';
-import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/models/conversation.dart';
+import 'package:chat_app/models/message.dart';
+import 'package:chat_app/models/user.dart';
 import 'package:chat_app/models/dummy_data.dart'; // Import to access addMessage and addConversation
 import 'package:flutter/material.dart';
 
@@ -11,13 +11,12 @@ class ChatDetailScreen extends StatefulWidget {
   final Function(Conversation) onAdd;
   final Function(Conversation) onUpdate;
 
-  const ChatDetailScreen({
-    super.key,
-    required this.user,
-    required this.messages,
-    required this.onAdd,
-    required this.onUpdate
-  });
+  const ChatDetailScreen(
+      {super.key,
+      required this.user,
+      required this.messages,
+      required this.onAdd,
+      required this.onUpdate});
 
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
@@ -60,8 +59,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     // Create new message
     final newMessage = Message(
       id: messageId,
-      sendTo: widget.user.id,
-      sendFrom: currentUser.id,
+      sendTo: User(id: widget.user.id!),
+      sendFrom: User(id: currentUser.id!),
       content: _messageController.text.trim(),
       type: MessageType.text,
       timestamp: DateTime.now(),
@@ -74,18 +73,30 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     // Check if conversation exists, if not create a new one
     debugPrint("====> Send message: ${currentUser.id} - ${widget.user.id}");
-    for(var e in DummyData.instance.dummyConversations) {
+    for (var e in DummyData.instance.dummyConversations) {
       debugPrint("===> Conv: ${e.id} - ${e.members}");
     }
-    final existingConversation = DummyData.instance.dummyConversations.firstWhere(
-          (conv) =>
-      conv.members.contains(currentUser.id) &&
-          conv.members.contains(widget.user.id),
+    final existingConversation =
+        DummyData.instance.dummyConversations.firstWhere(
+      (conv) =>
+          conv.members!.contains(currentUser.id) &&
+          conv.members!.contains(widget.user.id),
       orElse: () => Conversation(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
-        members: [currentUser.id, widget.user.id],
-        lastMessage: messageId,
-        messages: [messageId],
+        members: [User(id: currentUser.id!), User(id: widget.user.id!)],
+        lastMessage: null,
+        messages: [
+          Message(
+            id: messageId,
+            sendTo: User(id: widget.user.id!),
+            sendFrom: User(id: currentUser.id!),
+            content: _messageController.text.trim(),
+            type: MessageType.text,
+            timestamp: DateTime.now(),
+            status: MessageStatus.sent,
+            seenBy: [],
+          )
+        ],
       ),
     );
 
@@ -100,8 +111,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       final updatedConversation = Conversation(
         id: existingConversation.id,
         members: existingConversation.members,
-        lastMessage: messageId,
-        messages: [...existingConversation.messages, messageId],
+        lastMessage: null,
+        messages: [...existingConversation.messages!],
       );
       // DummyData.instance.dummyConversations.remove(existingConversation);
       // DummyData.instance.addConversation(updatedConversation);
@@ -146,7 +157,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage(widget.user.avatar),
+              backgroundImage: AssetImage(widget.user.avatarUrl!),
               radius: 16,
             ),
             const SizedBox(width: 8),
@@ -154,7 +165,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.user.name,
+                  widget.user.name!,
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -162,7 +173,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   ),
                 ),
                 Text(
-                  widget.user.isOnline
+                  widget.user.isOnline!
                       ? 'Đang hoạt động'
                       : 'Hoạt động ${_getLastSeenTime(widget.user.lastSeen)}',
                   style: TextStyle(
@@ -200,8 +211,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 // Group messages by date
                 final showDate = index == 0 ||
                     !_isSameDay(
-                      _messages[index].timestamp,
-                      _messages[index - 1].timestamp,
+                      _messages[index].timestamp!,
+                      _messages[index - 1].timestamp!,
                     );
 
                 return Column(
@@ -210,7 +221,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          _formatMessageDate(message.timestamp),
+                          _formatMessageDate(message.timestamp!),
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 12,
@@ -268,7 +279,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         hintText: 'Aa',
                         border: InputBorder.none,
                       ),
-                      onSubmitted: (_) => _sendMessage(), // Send on keyboard submit
+                      onSubmitted: (_) =>
+                          _sendMessage(), // Send on keyboard submit
                     ),
                   ),
                 ),
@@ -278,13 +290,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 _messageController.text.trim().isEmpty
                     ? IconButton(
-                  icon: const Icon(Icons.thumb_up, color: Colors.grey),
-                  onPressed: () {},
-                )
+                        icon: const Icon(Icons.thumb_up, color: Colors.grey),
+                        onPressed: () {},
+                      )
                     : IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF1E88E5)),
-                  onPressed: _sendMessage,
-                ),
+                        icon: const Icon(Icons.send, color: Color(0xFF1E88E5)),
+                        onPressed: _sendMessage,
+                      ),
               ],
             ),
           ),

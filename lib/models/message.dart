@@ -13,7 +13,7 @@ class Message {
   final Message? replyTo; // MessageId
   final Map<String, List<String>>? reactions; // { "👍": [UserId], "❤️": [UserId] }
   final MessageStatus? status;
-  final User? seenBy;
+  final List<User>? seenBy;
   final bool? isEdited;
   final List<String>? oldContent;
   final bool? isDeletedForEveryone;
@@ -53,9 +53,11 @@ class Message {
       status: MessageStatus.values.firstWhere(
           (e) => e.toString() == '${json['status']}',
           orElse: () => MessageStatus.sending),
-      seenBy: User.fromJson(json['seenBy']),
+      seenBy: (json['seenBy'] as List<dynamic>?)
+          ?.map((e) => User.fromJson(e))
+          .toList(),
       isEdited: json['isEdited'],
-      oldContent: List<String>.from(json['oldContent']),
+      oldContent: List<String>.from(json['oldContent'] ?? []),
       isDeletedForEveryone: json['isDeletedForEveryone'],
       deleteFor: List<String>.from(json['deleteFor']),
       forwardedFrom:
@@ -73,7 +75,7 @@ class Message {
       'replyTo': replyTo?.toJson(),
       'reactions': reactions,
       'status': status.toString().split('.').last,
-      'seenBy': seenBy?.toJson(),
+      'seenBy': seenBy?.map((user) => user.toJson()).toList(),
       'isEdited': isEdited,
       'oldContent': oldContent,
       'isDeletedForEveryone': isDeletedForEveryone,

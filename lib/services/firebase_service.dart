@@ -23,50 +23,79 @@ class FirebaseService {
       'BLULY-SFYt2bEaB42XJUE6M_RvF8rZQvadTYUiT2jOKuCYUoM19XzOvAyAfzEYf-4SGsOfFb32LNb2RZ51SHuRw';
 
   static Future<void> init() async {
-    // Khởi tạo Firebase
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+    try {
+      // Khởi tạo Firebase
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
 
-    // Cấu hình FlutterLocalNotifications
-    const AndroidInitializationSettings androidInitializationSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+      // Khởi tạo FCM (Firebase Cloud Messaging)
+      final messaging = FirebaseMessaging.instance;
 
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: androidInitializationSettings);
+      // Xin quyền nhận notification
+      final settings = await messaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: true,
+        sound: true,
+      );
 
-    await _localNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse:
-          (NotificationResponse notificationResponse) async {
-        // Xử lý khi người dùng nhấn vào thông báo
-        await handleNotificationClick(notificationResponse.payload);
-      },
-    );
+      // Cấu hình kênh thông báo trên Android
+      const androidChannel = AndroidNotificationChannel(
+        'high_importance_channel',
+        'High Importance Notifications',
+        description: 'This channel is used for important notifications.',
+        importance: Importance.high,
+      );
 
-    // Khởi chạy Crashlytics
-    FlutterError.onError = (errorDetails) {
-      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-    };
+      // Khởi tạo local notifications
+      await _localNotificationsPlugin.initialize(
+        const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          iOS: DarwinInitializationSettings(),
+        ),
+      );
 
-    // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
+      // Tạo kênh thông báo trên Android
+      await _localNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(androidChannel);
 
-    // Xin quyền thông báo
-    NotificationSettings settings = await fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    print('User granted permission: ${settings.authorizationStatus}');
+      // Nhận FCM token
+      final token = await messaging.getToken();
+      print('FCM Token: $token');
 
-    // Lắng nghe thông báo khi app chạy foreground, background, terminated
-    setupInteractedMessage();
+      // Xử lý thông báo khi app đang chạy foreground
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print('Received foreground message: ${message.notification?.title}');
 
-    // Đăng ký nhận thông báo background
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        // Hiển thị thông báo local
+        if (message.notification != null) {
+          _localNotificationsPlugin.show(
+            message.hashCode,
+            message.notification!.title,
+            message.notification!.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                androidChannel.id,
+                androidChannel.name,
+                channelDescription: androidChannel.description,
+                icon: '@mipmap/ic_launcher',
+              ),
+              iOS: const DarwinNotificationDetails(),
+            ),
+          );
+        }
+      });
+
+      print('Firebase initialized successfully');
+    } catch (e) {
+      print('Error initializing Firebase: $e');
+    }
   }
 
   static Future<String?> get fcmToken async =>

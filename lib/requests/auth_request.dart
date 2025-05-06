@@ -1,13 +1,13 @@
 import 'package:chat_app/common/api.dart';
+import 'package:chat_app/models/auth_response.dart';
 import 'package:chat_app/services/firebase_service.dart';
 import 'package:chat_app/services/http_service.dart';
 import 'package:dio/dio.dart';
 
 class AuthRequest extends HttpService {
-  Future<Response> login({
+  Future<AuthResponse?> login({
     required String email,
     required String password,
-    String? role,
   }) async {
     final fcmToken = await FirebaseService.fcmToken;
     final response = await post(
@@ -22,28 +22,35 @@ class AuthRequest extends HttpService {
       },
     );
 
-    return response;
+    if (response.statusCode == 200) {
+      return AuthResponse.fromJson(response.data);
+    }
+    return null;
   }
 
-  Future<Response> register({
+  Future<AuthResponse?> register({
     required String email,
     required String password,
-    required String confirmPassword,
-    required String name,
+    required String username,
   }) async {
+    final fcmToken = await FirebaseService.fcmToken;
     final response = await post(
       url: Api.register,
       data: {
         "email": email,
         "password": password,
-        "confirmPassword": confirmPassword,
-        "name": name,
+        "username": username,
+        "fcmToken": fcmToken,
       },
       headers: {
         'Content-Type': 'application/json',
       },
     );
-    return response;
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return AuthResponse.fromJson(response.data);
+    }
+    return null;
   }
 
   Future<Response> sendFCMTokenToServer(String fcmToken) {
