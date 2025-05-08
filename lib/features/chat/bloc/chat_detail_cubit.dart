@@ -1,5 +1,5 @@
-import 'package:chat_app/models/message_model.dart';
-import 'package:chat_app/models/user_model.dart';
+import 'package:chat_app/models/message.dart';
+import 'package:chat_app/models/user.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatDetailCubit extends Cubit<int> {

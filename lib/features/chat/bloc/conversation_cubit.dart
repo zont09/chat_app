@@ -1,4 +1,4 @@
-import 'package:chat_app/models/conservation_model.dart';
+import 'package:chat_app/models/conversation.dart';
 import 'package:chat_app/models/dummy_data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -29,9 +29,11 @@ class ConversationCubit extends Cubit<int> {
 
   updateOrder() {
     conversations.sort((a, b) {
-      final messA = DummyData.instance.dummyMessages.firstWhere((e) => e.id == a.lastMessage);
-      final messB = DummyData.instance.dummyMessages.firstWhere((e) => e.id == b.lastMessage);
-      return messB.timestamp.compareTo(messA.timestamp);
+      final messA = DummyData.instance.dummyMessages
+          .firstWhere((e) => e.id == a.lastMessage!.id);
+      final messB = DummyData.instance.dummyMessages
+          .firstWhere((e) => e.id == b.lastMessage!.id);
+      return messB.timestamp!.compareTo(messA.timestamp!);
     });
     EMIT();
   }
