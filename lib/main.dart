@@ -1,11 +1,9 @@
+import 'package:chat_app/features/test/test_view.dart';
 import 'package:chat_app/router/router.dart';
 import 'package:chat_app/router/shell_route/bloc/shell_route_cubit.dart';
-import 'package:chat_app/services/firebase_service.dart';
 import 'package:chat_app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive/hive.dart';
-import 'package:path_provider/path_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,13 +12,13 @@ Future<void> main() async {
   // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   // Khởi tạo Hive
-  final docDir = await getApplicationDocumentsDirectory();
-  Hive.init(docDir.path);
+  // final docDir = await getApplicationDocumentsDirectory();
+  // Hive.init(docDir.path);
 
   // Khởi tạo Firebase
-  await FirebaseService.init();
+  // await FirebaseService.init();
 
-  runApp(const RealChatApp());
+  runApp(const CallMainView());
 }
 
 class RealChatApp extends StatelessWidget {
