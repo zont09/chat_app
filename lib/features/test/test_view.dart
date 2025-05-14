@@ -3,13 +3,8 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'dart:convert';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class CallMainView extends StatelessWidget {
+  const CallMainView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +29,8 @@ class CallScreen extends StatefulWidget {
 class _CallScreenState extends State<CallScreen> {
   final _localVideoRenderer = RTCVideoRenderer();
   final _remoteVideoRenderer = RTCVideoRenderer();
+  bool _remoteDescriptionSet = false;
+  List<RTCIceCandidate> _remoteCandidates = [];
 
   MediaStream? _localStream;
   RTCPeerConnection? _peerConnection;
@@ -133,6 +130,12 @@ class _CallScreenState extends State<CallScreen> {
         ),
       );
 
+      _remoteDescriptionSet = true;
+      for (final candidate in _remoteCandidates) {
+        await _peerConnection!.addCandidate(candidate);
+      }
+      _remoteCandidates.clear();
+
       RTCSessionDescription answer = await _peerConnection!.createAnswer();
       await _peerConnection!.setLocalDescription(answer);
 
@@ -150,24 +153,42 @@ class _CallScreenState extends State<CallScreen> {
 
     // Handle answer to our offer
     _socket!.on('answer', (data) async {
-      await _peerConnection?.setRemoteDescription(
-        RTCSessionDescription(
-          data['answer']['sdp'],
-          data['answer']['type'],
-        ),
+      final desc = RTCSessionDescription(
+        data['answer']['sdp'],
+        data['answer']['type'],
       );
+
+      final state = _peerConnection?.signalingState;
+      debugPrint('📡 Current signaling state before setting answer: $state');
+
+      if (state == 'have-local-offer') {
+        await _peerConnection!.setRemoteDescription(desc);
+
+        _remoteDescriptionSet = true;
+        for (final c in _remoteCandidates) {
+          await _peerConnection!.addCandidate(c);
+        }
+        _remoteCandidates.clear();
+      } else {
+        debugPrint("⚠️ Không setRemoteDescription(answer) vì signalingState hiện tại là: $state");
+      }
     });
+
 
     // Handle ICE candidate
     _socket!.on('ice-candidate', (data) async {
       if (_peerConnection != null) {
-        await _peerConnection!.addCandidate(
-          RTCIceCandidate(
-            data['candidate']['candidate'],
-            data['candidate']['sdpMid'],
-            data['candidate']['sdpMLineIndex'],
-          ),
+        final candidate = RTCIceCandidate(
+          data['candidate']['candidate'],
+          data['candidate']['sdpMid'],
+          data['candidate']['sdpMLineIndex'],
         );
+
+        if (_remoteDescriptionSet) {
+          await _peerConnection!.addCandidate(candidate);
+        } else {
+          _remoteCandidates.add(candidate);
+        }
       }
     });
 
